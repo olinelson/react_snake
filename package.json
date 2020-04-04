@@ -1,5 +1,6 @@
 {
-  "name": "antd-snake",
+  "name": "react_snake",
+  "homepage": "https://olinelson.github.io/react_snake",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
