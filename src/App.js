@@ -18,13 +18,6 @@ const BoardLayout = styled.div`
     align-self: center;
     justify-self: center;
   `
-const StyledButton = styled(Button)`
-
-  // font-size: 4rem;
-  // background: white;
-  // border: none;
-  // cursor: pointer;
-`
 
 const SnakeBody = styled.div`
     background: black;
@@ -69,9 +62,64 @@ const Controls = styled.div`
 function App () {
   let ticker
   const boardSize = 16
-  const gameSpeed = 200
+  const gameSpeed = 150
+
+  const clickSound = new Audio('./click.mp3')
+  const crunchSound = new Audio('./crunch.mp3')
+  const errorSound = new Audio('./error.mp3')
+
+  // utils
+  const getRandomBoardPosition = () => {
+    const min = 0
+    const max = boardSize - 1
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
+
+  // state
   const [score, setScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
+  const boardRef = useRef(null)
+  const board = Array.from({ length: boardSize }, (v, i) => Array.from({ length: boardSize }, (v, i) => 0))
+  const [snakePosition, setSnakePosition] = useState([[1, 1], [1, 2], [1, 3]])
+  const [direction, setDirection] = useState('right')
+  const [applePosition, setApplePosition] = useState([getRandomBoardPosition(), getRandomBoardPosition()])
+
+  const boardTick = () => {
+    switch (direction) {
+      case 'right':
+        goRight()
+        break
+      case 'down':
+        goDown()
+        break
+      case 'left':
+        goLeft()
+        break
+      case 'up':
+        goUp()
+        break
+      default:
+        break
+    }
+  }
+
+  const handleKeyDown = (e) => {
+    clickSound.play()
+    switch (e.key) {
+      case 'ArrowUp':
+        setDirection('up')
+        break
+      case 'ArrowRight':
+        setDirection('right')
+        break
+      case 'ArrowDown':
+        setDirection('down')
+        break
+      case 'ArrowLeft':
+        setDirection('left')
+        break
+    }
+  }
 
   const resetGame = () => {
     setDirection('right')
@@ -79,41 +127,32 @@ function App () {
     setSnakePosition([[1, 1], [1, 2], [1, 3]])
     setApplePosition([getRandomBoardPosition(), getRandomBoardPosition()])
     setGameOver(false)
-    // ticker = setInterval(boardTick, gameSpeed)
-    // window.location.reload()
   }
 
-  const getRandomBoardPosition = () => {
-    const min = 0
-    const max = boardSize - 1
-    return Math.floor(Math.random() * (max - min + 1)) + min
+  const snakeIsAtCoords = (r, c) => {
+    for (const s of snakePosition) {
+      if (s[0] === r && s[1] === c) return true
+    }
+    return false
   }
-
-  const boardRef = useRef(null)
-
-  const board = Array.from({ length: boardSize }, (v, i) => Array.from({ length: boardSize }, (v, i) => 0))
-
-  const [snakePosition, setSnakePosition] = useState([[1, 1], [1, 2], [1, 3]])
-
-  const [direction, setDirection] = useState('right')
-
-  const [applePosition, setApplePosition] = useState([getRandomBoardPosition(), getRandomBoardPosition()])
 
   const updateSnakeAndMaybeGrow = (newSnakePosition, newHead) => {
     if (snakeIsAtCoords(newHead[0], newHead[1])) {
+      errorSound.play()
       setGameOver(true)
     }
 
-    if (snakePosition[0][0] === applePosition[0] && snakePosition[0][1] === applePosition[1]) {
+    if (snakePosition[snakePosition.length - 1][0] === applePosition[0] && snakePosition[snakePosition.length - 1][1] === applePosition[1]) {
+      crunchSound.play()
       newSnakePosition.push(newHead)
       setApplePosition([getRandomBoardPosition(), getRandomBoardPosition()])
       const newScore = score + 1
       setScore(newScore)
     }
-
     setSnakePosition(newSnakePosition)
   }
 
+  // movements
   const goRight = () => {
     const newSnakePosition = [...snakePosition]
     newSnakePosition.splice(0, 1)
@@ -158,85 +197,37 @@ function App () {
     updateSnakeAndMaybeGrow(newSnakePosition, newHead)
   }
 
-  const boardTick = () => {
-    switch (direction) {
-      case 'right':
-        goRight()
-        break
-      case 'down':
-        goDown()
-        break
-      case 'left':
-        goLeft()
-        break
-      case 'up':
-        goUp()
-        break
-      default:
-        break
+  // Print
+  const printBoard = () => {
+    let r = 0
+    const result = []
+    for (const row of board) {
+      let c = 0
+      for (const col of row) {
+        if (snakeIsAtCoords(r, c)) result.push(<SnakeBody key={uuidv4()} />)
+        else if (applePosition[0] === r && applePosition[1] === c) result.push(<Apple key={uuidv4()} />)
+        else result.push(<EmptySpace key={uuidv4()} />)
+        c++
+      }
+      r++
     }
+    return result
   }
 
+  // Effects
   useEffect(() => {
     ticker = setInterval(boardTick, gameSpeed)
-
-    if (gameOver) clearInterval(ticker)
-
+    if (gameOver) {
+      clearInterval(ticker)
+      Modal.error({ onOk: resetGame(), okText: 'Try Again', content: `Your score was ${score}`, title: 'Game Over!' })
+    }
     return () => clearInterval(ticker)
   }, [boardTick, gameOver])
 
   useEffect(() => {
     boardRef.current.focus()
-    // document.addEventListener('onKeyDown')
     document.addEventListener('keydown', handleKeyDown)
-    // onKeyDown = {(e) => handleKeyDown(e.key)
   }, [])
-
-  const handleKeyDown = (e) => {
-    switch (e.key) {
-      case 'ArrowUp':
-        setDirection('up')
-        break
-      case 'ArrowRight':
-        setDirection('right')
-        break
-      case 'ArrowDown':
-        setDirection('down')
-        break
-      case 'ArrowLeft':
-        setDirection('left')
-        break
-    }
-  }
-
-  const snakeIsAtCoords = (r, c) => {
-    for (const s of snakePosition) {
-      if (s[0] === r && s[1] === c) return true
-    }
-    return false
-  }
-
-  const printBoard = () => {
-    let r = 0
-
-    const result = []
-
-    for (const row of board) {
-      let c = 0
-      for (const col of row) {
-        if (snakeIsAtCoords(r, c)) result.push(<SnakeBody key={uuidv4()} />)
-
-        else if (applePosition[0] === r && applePosition[1] === c) result.push(<Apple key={uuidv4()} />)
-
-        else result.push(<EmptySpace key={uuidv4()} />)
-
-        c++
-      }
-      r++
-    }
-
-    return result
-  }
 
   return (
     <>
@@ -249,19 +240,12 @@ function App () {
         </BoardLayout>
 
         <Controls style={{ gridArea: 'controls' }}>
-
-          <StyledButton size='large' shape='circle' onClick={() => setDirection('up')} style={{ gridArea: 'up' }}><ArrowUpOutlined /></StyledButton>
-          <StyledButton size='large' shape='circle' onClick={() => setDirection('left')} style={{ gridArea: 'left' }}><ArrowLeftOutlined /></StyledButton>
-          <StyledButton size='large' shape='circle' onClick={() => setDirection('right')} style={{ gridArea: 'right' }}><ArrowRightOutlined /></StyledButton>
-          <StyledButton size='large' shape='circle' onClick={() => setDirection('down')} style={{ gridArea: 'down' }}><ArrowDownOutlined /></StyledButton>
+          <Button size='large' shape='circle' onClick={() => setDirection('up')} style={{ gridArea: 'up' }}><ArrowUpOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('left')} style={{ gridArea: 'left' }}><ArrowLeftOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('right')} style={{ gridArea: 'right' }}><ArrowRightOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('down')} style={{ gridArea: 'down' }}><ArrowDownOutlined /></Button>
         </Controls>
       </AppContainer>
-
-      <Modal
-        title='Game Over'
-        visible={gameOver}
-        onOk={resetGame}
-      />
     </>
   )
 }
