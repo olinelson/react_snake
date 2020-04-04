@@ -31,7 +31,8 @@ const EmptySpace = styled.div`
     background: white;
   `
 const AppContainer = styled.div`
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   width: 100vw;
   display: grid;
   grid-template-columns: 1fr;
