@@ -61,7 +61,6 @@ const Controls = styled.div`
 `
 
 function App () {
-  let ticker
   const boardSize = 16
   const gameSpeed = 150
 
@@ -84,6 +83,17 @@ function App () {
   const [snakePosition, setSnakePosition] = useState([[1, 1], [1, 2], [1, 3]])
   const [direction, setDirection] = useState('right')
   const [applePosition, setApplePosition] = useState([getRandomBoardPosition(), getRandomBoardPosition()])
+
+  const [gameState, setGameState] = useState(
+    {
+      score: 0,
+      gameOver: false,
+      board: Array.from({ length: boardSize }, (v, i) => Array.from({ length: boardSize }, (v, i) => 0)),
+      snakePosition: [[1, 1], [1, 2], [1, 3]],
+      direction: 'right',
+      applePosition: [getRandomBoardPosition(), getRandomBoardPosition()]
+    }
+  )
 
   const boardTick = () => {
     switch (direction) {
@@ -123,11 +133,13 @@ function App () {
   }
 
   const resetGame = () => {
-    setDirection('right')
-    setScore(0)
-    setSnakePosition([[1, 1], [1, 2], [1, 3]])
-    setApplePosition([getRandomBoardPosition(), getRandomBoardPosition()])
-    setGameOver(false)
+    setGameState({
+      direction: 'right',
+      score: 0,
+      snakePosition: [[1, 1], [1, 2], [1, 3]],
+      applePosition: [getRandomBoardPosition(), getRandomBoardPosition()],
+      gameOver: false
+    })
   }
 
   const snakeIsAtCoords = (r, c) => {
@@ -140,17 +152,26 @@ function App () {
   const updateSnakeAndMaybeGrow = (newSnakePosition, newHead) => {
     if (snakeIsAtCoords(newHead[0], newHead[1])) {
       errorSound.play()
-      setGameOver(true)
+      setGameState(oldGameState => ({ ...oldGameState, gameOver: false }))
+      return
     }
 
     if (snakePosition[snakePosition.length - 1][0] === applePosition[0] && snakePosition[snakePosition.length - 1][1] === applePosition[1]) {
       crunchSound.play()
       newSnakePosition.push(newHead)
-      setApplePosition([getRandomBoardPosition(), getRandomBoardPosition()])
+      // setApplePosition([getRandomBoardPosition(), getRandomBoardPosition()])
       const newScore = score + 1
-      setScore(newScore)
+      // setScore(newScore)
+      setGameState(oldGameState => ({
+        ...oldGameState,
+        score: newScore,
+        applePosition: [getRandomBoardPosition(), getRandomBoardPosition()],
+        snakePosition: newSnakePosition
+      }))
+      return
     }
-    setSnakePosition(newSnakePosition)
+
+    setGameState(oldGameState => ({ ...oldGameState, snakePosition: newSnakePosition }))
   }
 
   // movements
@@ -217,7 +238,7 @@ function App () {
 
   // Effects
   useEffect(() => {
-    ticker = setInterval(boardTick, gameSpeed)
+    const ticker = setInterval(boardTick, gameSpeed)
     if (gameOver) {
       clearInterval(ticker)
       Modal.error({ onOk: resetGame(), okText: 'Try Again', content: `Your score was ${score}`, title: 'Game Over!' })
