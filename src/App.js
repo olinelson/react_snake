@@ -5,7 +5,9 @@ import {
 } from '@ant-design/icons'
 
 import styled from 'styled-components'
-import { Button, Modal } from 'antd'
+import { Form, Button, Modal, Input } from 'antd'
+
+import Firebase from './Firebase'
 
 const BoardLayout = styled.div`
     display: grid;
@@ -93,12 +95,46 @@ const App = () => {
   const [direction, setDirection] = useState('right')
   const [gameState, setGameState] = useState(defaultGameState)
 
+  const [scores, setScores] = useState([])
+
+  const db = useRef(Firebase.firestore().collection('scores'))
+
+  const getScores = async () => {
+    const scores = []
+
+    const snapshot = await db.current.get()
+    snapshot.forEach(doc => {
+      scores.push(doc.data())
+    })
+
+    setScores(scores)
+  }
+
   const snakeIsAtCoords = (r, c) => {
     for (const s of gameState.snakePosition) {
       if (s[0] === r && s[1] === c) return true
     }
     return false
   }
+
+  const saveScoreAndRestart = (v) => {
+    console.log(v)
+    setDirection('right')
+    setGameState(defaultGameState)
+  }
+
+  // const gameOverModalContent = ({ score }) => {
+  //   return (
+
+  //     <Form onF>
+  //       <h4>Your Score was: {score}</h4>
+  //       <p>Record your name for posteriry!</p>
+  //       <Form.Item label='Name'>
+  //         <Input />
+  //       </Form.Item>
+  //     </Form>
+  //   )
+  // }
 
   // Print
   const printBoard = () => {
@@ -216,7 +252,7 @@ const App = () => {
 
     if (gameState.gameOver) {
       clearInterval(ticker.current)
-      Modal.error({ onOk: () => resetGame(), okText: 'Try Again', content: `Your score was ${gameState.score}`, title: 'Game Over!' })
+      // Modal.error({ onOk: () => resetGame(), okText: 'Try Again', title: 'Game Over', content: gameOverModalContent(gameState) })
     }
 
     return () => clearInterval(ticker.current)
@@ -243,6 +279,7 @@ const App = () => {
 
     boardRef.current.focus()
     document.addEventListener('keydown', handleKeyDown)
+    getScores()
 
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [clickSound])
@@ -264,6 +301,28 @@ const App = () => {
           <Button size='large' shape='circle' onClick={() => setGameState(oldGameState => ({ ...oldGameState, direction: 'down' }))} style={{ gridArea: 'down' }}><ArrowDownOutlined /></Button>
         </Controls>
       </AppContainer>
+
+      <Modal
+        visible={gameState.gameOver}
+        closable={false}
+        footer={null}
+      >
+        <Form onFinish={(v) => saveScoreAndRestart({ ...v, score: gameState.score })}>
+          <h1>Game Over</h1>
+          <h4>Your Score was: {gameState.score}</h4>
+          <p>Record your name for posterity!</p>
+          <Form.Item name='name' label='Name'>
+            <Input />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type='primary' htmlType='submit'>
+              Play Again
+            </Button>
+          </Form.Item>
+
+        </Form>
+      </Modal>
     </>
   )
 }
