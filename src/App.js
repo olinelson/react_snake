@@ -95,20 +95,20 @@ const App = () => {
   const [direction, setDirection] = useState('right')
   const [gameState, setGameState] = useState(defaultGameState)
 
-  const [scores, setScores] = useState([])
+  // const [scores, setScores] = useState([])
 
-  const db = useRef(Firebase.firestore().collection('scores'))
+  // const db = useRef(Firebase.firestore().collection('scores'))
 
-  const getScores = async () => {
-    const scores = []
+  // const getScores = async () => {
+  //   const scores = []
 
-    const snapshot = await db.current.get()
-    snapshot.forEach(doc => {
-      scores.push(doc.data())
-    })
+  //   const snapshot = await db.current.get()
+  //   snapshot.forEach(doc => {
+  //     scores.push(doc.data())
+  //   })
 
-    setScores(scores)
-  }
+  //   setScores(scores)
+  // }
 
   const snakeIsAtCoords = (r, c) => {
     for (const s of gameState.snakePosition) {
@@ -279,7 +279,7 @@ const App = () => {
 
     boardRef.current.focus()
     document.addEventListener('keydown', handleKeyDown)
-    getScores()
+    // getScores()
 
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [clickSound])
