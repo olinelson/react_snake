@@ -276,7 +276,7 @@ const App = () => {
   return (
     <>
       <AppContainer>
-        <h1 style={{ gridArea: 'heading' }}>Sn8k M8</h1>
+        <h1 style={{ gridArea: 'heading' }}>React Snake</h1>
         <h4 style={{ gridArea: 'score' }}>{gameState.score}</h4>
 
         <BoardLayout ref={boardRef} style={{ gridArea: 'game' }} boardSize={boardSize} tabIndex='0'>
