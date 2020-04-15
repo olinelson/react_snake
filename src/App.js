@@ -277,18 +277,20 @@ const App = () => {
     <>
       <AppContainer>
         <h1 style={{ gridArea: 'heading' }}>React Snake</h1>
-        <h4 style={{ gridArea: 'score' }}>{gameState.score}</h4>
+        <h4 style={{ gridArea: 'score' }}>Score: {gameState.score}</h4>
+
 
         <BoardLayout ref={boardRef} style={{ gridArea: 'game' }} boardSize={boardSize} tabIndex='0'>
           {printBoard()}
         </BoardLayout>
 
         <Controls style={{ gridArea: 'controls' }}>
-          <Button size='large' shape='circle' onClick={() => setGameState(oldGameState => ({ ...oldGameState, direction: 'up' }))} style={{ gridArea: 'up' }}><ArrowUpOutlined /></Button>
-          <Button size='large' shape='circle' onClick={() => setGameState(oldGameState => ({ ...oldGameState, direction: 'left' }))} style={{ gridArea: 'left' }}><ArrowLeftOutlined /></Button>
-          <Button size='large' shape='circle' onClick={() => setGameState(oldGameState => ({ ...oldGameState, direction: 'right' }))} style={{ gridArea: 'right' }}><ArrowRightOutlined /></Button>
-          <Button size='large' shape='circle' onClick={() => setGameState(oldGameState => ({ ...oldGameState, direction: 'down' }))} style={{ gridArea: 'down' }}><ArrowDownOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('up')} style={{ gridArea: 'up' }}><ArrowUpOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('left')} style={{ gridArea: 'left' }}><ArrowLeftOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('right')} style={{ gridArea: 'right' }}><ArrowRightOutlined /></Button>
+          <Button size='large' shape='circle' onClick={() => setDirection('down')} style={{ gridArea: 'down' }}><ArrowDownOutlined /></Button>
         </Controls>
+        <p>Use your arrow keys or the buttons above to play</p>
       </AppContainer>
 
       {/* <Modal
