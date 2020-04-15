@@ -7,7 +7,7 @@ import {
 import styled from 'styled-components'
 import { Form, Button, Modal, Input } from 'antd'
 
-import Firebase from './Firebase'
+// import Firebase from './Firebase'
 
 const BoardLayout = styled.div`
     display: grid;
@@ -61,6 +61,8 @@ const Controls = styled.div`
   ". down ."
   ;
 `
+
+// TODO Hookup to firebase for high scores
 
 const boardSize = 16
 
@@ -117,23 +119,10 @@ const App = () => {
     return false
   }
 
-  const saveScoreAndRestart = (v) => {
-    console.log(v)
-    setDirection('right')
-    setGameState(defaultGameState)
-  }
-
-  // const gameOverModalContent = ({ score }) => {
-  //   return (
-
-  //     <Form onF>
-  //       <h4>Your Score was: {score}</h4>
-  //       <p>Record your name for posteriry!</p>
-  //       <Form.Item label='Name'>
-  //         <Input />
-  //       </Form.Item>
-  //     </Form>
-  //   )
+  // const saveScoreAndRestart = (v) => {
+  //   console.log(v)
+  //   setDirection('right')
+  //   setGameState(defaultGameState)
   // }
 
   // Print
@@ -252,7 +241,7 @@ const App = () => {
 
     if (gameState.gameOver) {
       clearInterval(ticker.current)
-      // Modal.error({ onOk: () => resetGame(), okText: 'Try Again', title: 'Game Over', content: gameOverModalContent(gameState) })
+      Modal.error({ onOk: () => resetGame(), okText: 'Try Again', title: 'Game Over', content: `Your score was ${gameState.score}` })
     }
 
     return () => clearInterval(ticker.current)
@@ -302,7 +291,7 @@ const App = () => {
         </Controls>
       </AppContainer>
 
-      <Modal
+      {/* <Modal
         visible={gameState.gameOver}
         closable={false}
         footer={null}
@@ -322,7 +311,7 @@ const App = () => {
           </Form.Item>
 
         </Form>
-      </Modal>
+      </Modal> */}
     </>
   )
 }
